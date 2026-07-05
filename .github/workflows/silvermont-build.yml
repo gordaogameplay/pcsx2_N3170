@@ -28,8 +28,7 @@ jobs:
             qt6-base-dev qt6-base-private-dev qt6-tools-dev \
             qt6-tools-dev-tools libqt6svg6-dev libqt6shadertools6-dev \
             libavcodec-dev libavformat-dev libswresample-dev libswscale-dev \
-            libzstd-dev libcurl4-openssl-dev libfmt-dev libsqlite3-dev \
-            libbacktrace-dev
+            libzstd-dev libcurl4-openssl-dev libfmt-dev libsqlite3-dev
 
       - name: Configure and Build
         run: |
@@ -47,13 +46,15 @@ jobs:
             -DQT_BUILD=ON \
             -DUSE_SYSTEM_LIBS=OFF \
             -DUSE_SYSTEM_SDL3=OFF \
-            -DUSE_SYSTEM_FMT=OFF
+            -DUSE_SYSTEM_FMT=OFF \
+            -DUSE_SYSTEM_X86_HOST_LIBS=OFF
 
           make -j$(nproc)
 
       - name: Package Artifact
         run: |
           mkdir -p release
+          # O binário geralmente fica em build/bin/pcsx2-qt ou build/bin/pcsx2
           cp -r build/bin/* release/ || true
           tar -czvf pcsx2-silvermont-n3170.tar.gz release/
 
