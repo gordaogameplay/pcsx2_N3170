@@ -1,11 +1,11 @@
 name: PCSX2 Silvermont Build (N3170)
 
 on:
-  workflow_dispatch: # Permite que você inicie a compilação manualmente
+  workflow_dispatch:
 
 jobs:
   build_linux:
-    runs-on: ubuntu-24.04 # Versão mais nova para ter SDL3 e Qt6 nativos
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,9 +26,9 @@ jobs:
             libxinerama-dev libxi-dev libxrandr-dev libxxf86vm-dev \
             libxml2-dev nlohmann-json3-dev qt6-base-dev \
             qt6-base-private-dev qt6-tools-dev qt6-tools-dev-tools \
-            libqt6svg6-dev qt6-l10n-tools qt6-shader-tools \
+            libqt6svg6-dev libqt6shadertools6-dev \
             libavcodec-dev libavformat-dev libswresample-dev libswscale-dev \
-            libchdr-dev libzstd-dev libcurl4-openssl-dev
+            libzstd-dev libcurl4-openssl-dev
 
       - name: Configure CMake
         run: |
@@ -41,14 +41,16 @@ jobs:
             -DUSE_VULKAN=ON \
             -DPERFORMANCE_BUILD=ON \
             -DUSE_DRC=ON \
-            -DQT_BUILD=ON
+            -DQT_BUILD=ON \
+            -DUSE_SYSTEM_LIBS=OFF
 
       - name: Build
         run: cmake --build build -j $(nproc)
 
       - name: Package Artifact
         run: |
-          mkdir release
+          mkdir -p release
+          # Copia o executável principal e recursos necessários
           cp -r build/bin/* release/
           tar -czvf pcsx2-silvermont-n3170.tar.gz release/
 
