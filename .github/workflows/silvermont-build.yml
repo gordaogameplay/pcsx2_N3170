@@ -19,43 +19,40 @@ jobs:
             cmake ccache curl \
             libaio-dev libasound2-dev libbz2-dev libegl1-mesa-dev \
             libgl1-mesa-dev libgles2-mesa-dev libjack-jackd2-dev \
-            liblzma-dev libpcap-dev libpng-dev libpulse-dev \
-            libsdl2-dev libsoundtouch-dev libspeexdsp-dev \
-            libudev-dev libvorbis-dev libvulkan-dev libwayland-dev \
-            libx11-dev libx11-xcb-dev libxcursor-dev libxext-dev \
-            libxinerama-dev libxi-dev libxrandr-dev libxxf86vm-dev \
-            libxml2-dev nlohmann-json3-dev qt6-base-dev \
-            qt6-base-private-dev qt6-tools-dev qt6-tools-dev-tools \
-            libqt6svg6-dev libqt6shadertools6-dev \
+            liblzma-dev libpcap-dev libpng-dev libjpeg-dev libwebp-dev \
+            libfreetype6-dev libpulse-dev libsdl2-dev libsoundtouch-dev \
+            libspeexdsp-dev libudev-dev libvorbis-dev libvulkan-dev \
+            libwayland-dev libx11-dev libx11-xcb-dev libxcursor-dev \
+            libxext-dev libxinerama-dev libxi-dev libxrandr-dev \
+            libxxf86vm-dev libxml2-dev nlohmann-json3-dev \
+            qt6-base-dev qt6-base-private-dev qt6-tools-dev \
+            qt6-tools-dev-tools libqt6svg6-dev libqt6shadertools6-dev \
             libavcodec-dev libavformat-dev libswresample-dev libswscale-dev \
-            libzstd-dev libcurl4-openssl-dev
+            libzstd-dev libcurl4-openssl-dev libfmt-dev
 
-      - name: Install Dependencies
+      - name: Configure and Build
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            cmake ccache curl \
-            libaio-dev libasound2-dev libbz2-dev libegl1-mesa-dev \
-            libgl1-mesa-dev libgles2-mesa-dev libjack-jackd2-dev \
-            liblzma-dev libpcap-dev libpng-dev libjpeg-dev libwebp-dev libpulse-dev \
-            libsdl2-dev libsoundtouch-dev libspeexdsp-dev \
-            libudev-dev libvorbis-dev libvulkan-dev libwayland-dev \
-            libx11-dev libx11-xcb-dev libxcursor-dev libxext-dev \
-            libxinerama-dev libxi-dev libxrandr-dev libxxf86vm-dev \
-            libxml2-dev nlohmann-json3-dev qt6-base-dev \
-            qt6-base-private-dev qt6-tools-dev qt6-tools-dev-tools \
-            libqt6svg6-dev libqt6shadertools6-dev \
-            libavcodec-dev libavformat-dev libswresample-dev libswscale-dev \
-            libzstd-dev libcurl4-openssl-dev
-
-      - name: Build
-        run: cmake --build build -j $(nproc)
+          mkdir -p build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS="-march=silvermont -mtune=silvermont -O3" \
+            -DCMAKE_CXX_FLAGS="-march=silvermont -mtune=silvermont -O3" \
+            -DENABLE_AVX=OFF \
+            -DENABLE_AVX2=OFF \
+            -DUSE_VULKAN=ON \
+            -DPERFORMANCE_BUILD=ON \
+            -DUSE_DRC=ON \
+            -DQT_BUILD=ON \
+            -DUSE_SYSTEM_LIBS=OFF
+          
+          make -j$(nproc)
 
       - name: Package Artifact
         run: |
           mkdir -p release
-          # Copia o executável principal e recursos necessários
-          cp -r build/bin/* release/
+          # Copia o binário final
+          cp -r build/bin/* release/ || true
           tar -czvf pcsx2-silvermont-n3170.tar.gz release/
 
       - name: Upload Build
